@@ -176,8 +176,8 @@
     <div class="logo">DIY Circuitry & Robotics</div>
     <div class="contact-info">
       📍 123 Maker Street, Ahmedabad<br>
-      📞 +91-98765-43210<br>
-      ✉️ support@diycircuitry.com
+      📞 +91-82008-97143<br>
+    
     </div>
   </header>
 
@@ -279,10 +279,10 @@
           skipEmptyLines: true,
           complete: function(results) {
             allProducts = results.data.map(row => ({
-              name: row.Name,
-              photo: row.Photo,
-              stock: parseInt(row.Quantity) > 0 ? "✅ In Stock" : "❌ Out of Stock"
-            }));
+  name: row.Name,
+  photo: row["Photo URL"],
+  stock: parseInt(row.Quantity) > 0 ? "✅ In Stock" : "❌ Out of Stock"
+}));
             filterAndDisplay();
           }
         });
