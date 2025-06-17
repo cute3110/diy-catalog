@@ -317,11 +317,24 @@
           header: true,
           skipEmptyLines: true,
           complete: function(results) {
-            allProducts = results.data.map(row => ({
-  name: row.Name,
-  photo: row["Photo URL"],
-  stock: parseInt(row.Quantity) > 0 ? "✅ In Stock" : "❌ Out of Stock"
-}));
+           const seen = new Set();
+allProducts = [];
+
+results.data.forEach(row => {
+  const name = row.Name.trim();
+  const photo = row["Photo URL"].trim();
+  const uniqueKey = name + "|" + photo;
+
+  if (!seen.has(uniqueKey)) {
+    seen.add(uniqueKey);
+    allProducts.push({
+      name,
+      photo,
+      stock: parseInt(row.Quantity) > 0 ? "✅ In Stock" : "❌ Out of Stock"
+    });
+  }
+});
+
             filterAndDisplay();
           }
         });
