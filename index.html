@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>DIY Circuitry & Robotics Catalog</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
@@ -206,7 +205,6 @@
     padding: 16px;
   }
 }
-
   </style>
 </head>
 <body>
@@ -216,7 +214,6 @@
     <div class="contact-info">
       📍 Sector 4/A, Gandhinagar, Gujarat<br>
       📞 +91-82008-97143<br>
-    
     </div>
   </header>
 
@@ -235,6 +232,22 @@
     let currentPage = 1;
     let allProducts = [];
     let lastSearch = "";
+
+    // Function to deduplicate products array
+    function deduplicateProducts(products) {
+      const seen = new Map();
+      const result = [];
+      
+      for (const product of products) {
+        const key = product.name + "|" + product.photo;
+        if (!seen.has(key)) {
+          seen.set(key, true);
+          result.push(product);
+        }
+      }
+      
+      return result;
+    }
 
     function displayProducts(products) {
       const container = $('#productContainer');
@@ -307,7 +320,11 @@
         lastSearch = search;
       }
 
-      const filtered = allProducts.filter(p => p.name.toLowerCase().includes(search));
+      // Apply deduplication to filtered results
+      const filtered = deduplicateProducts(
+        allProducts.filter(p => p.name.toLowerCase().includes(search))
+      );
+      
       displayProducts(filtered);
     }
 
@@ -317,24 +334,15 @@
           header: true,
           skipEmptyLines: true,
           complete: function(results) {
-           const seen = new Set();
-allProducts = [];
+            allProducts = results.data.map(row => ({
+              name: (row.Name || '').trim(),
+              photo: (row["Photo URL"] || '').trim(),
+              stock: parseInt(row.Quantity) > 0 ? "✅ In Stock" : "❌ Out of Stock"
+            })).filter(p => p.name); // Filter out empty names
 
-results.data.forEach(row => {
-  const name = row.Name.trim();
-  const photo = row["Photo URL"].trim();
-  const uniqueKey = name + "|" + photo;
-
-  if (!seen.has(uniqueKey)) {
-    seen.add(uniqueKey);
-    allProducts.push({
-      name,
-      photo,
-      stock: parseInt(row.Quantity) > 0 ? "✅ In Stock" : "❌ Out of Stock"
-    });
-  }
-});
-
+            // Apply deduplication to initial data
+            allProducts = deduplicateProducts(allProducts);
+            
             filterAndDisplay();
           }
         });
