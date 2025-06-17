@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DIY Circuitry Catalog</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f4f8;
+      padding: 30px;
+      margin: 0;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+    }
+
+    #searchInput {
+      display: block;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto 30px;
+      padding: 12px 16px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .product-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .product-card {
+      background: #fff;
+      width: 260px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      transition: transform 0.2s;
+    }
+
+    .product-card:hover {
+      transform: scale(1.02);
+    }
+
+    .product-card img {
+      width: 100%;
+      max-height: 220px;
+      object-fit: contain; /* <-- DON'T CROP IMAGE */
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .product-name {
+      font-weight: 600;
+      font-size: 17px;
+      color: #222;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .stock {
+      font-size: 14px;
+      color: #555;
+    }
+
+    .pagination {
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .pagination button {
+      padding: 8px 14px;
+      margin: 4px;
+      font-size: 14px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .pagination button:hover {
+      background: #0056b3;
+    }
+
+    .pagination button.disabled {
+      background: #aaa;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>DIY Circuitry Product Catalog</h1>
+  <input type="text" id="searchInput" placeholder="Search products...">
+
+  <div class="product-grid" id="productContainer"></div>
+
+  <div class="pagination" id="paginationControls"></div>
+
+  <script>
+    const productsPerPage = 10;
+    let currentPage = 1;
+    let allProducts = [];
+
+    function displayProducts(products) {
+      const container = $('#productContainer');
+      container.empty();
+
+      const start = (currentPage - 1) * productsPerPage;
+      const paginated = products.slice(start, start + productsPerPage);
+
+      paginated.forEach(p => {
+        const card = $(`
+          <div class="product-card">
+            <img src="${p.photo}" alt="${p.name}" onerror="this.src='https://i.ibb.co/RG44DS1g/logo.png';" />
+            <div class="product-name">${p.name}</div>
+            <div class="stock">${p.stock}</div>
+          </div>
+        `);
+        container.append(card);
+      });
+
+      renderPagination(products.length);
+    }
+
+    function renderPagination(totalItems) {
+      const totalPages = Math.ceil(totalItems / productsPerPage);
+      const controls = $('#paginationControls');
+      controls.empty();
+
+      const prevBtn = $('<button>Previous</button>');
+      if (currentPage === 1) prevBtn.addClass('disabled');
+      prevBtn.on('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          filterAndDisplay();
+        }
+      });
+      controls.append(prevBtn);
+
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = $(`<button>${i}</button>`);
+        if (i === currentPage) btn.addClass('disabled');
+        btn.on('click', () => {
+          currentPage = i;
+          filterAndDisplay();
+        });
+        controls.append(btn);
+      }
+
+      const nextBtn = $('<button>Next</button>');
+      if (currentPage === totalPages) nextBtn.addClass('disabled');
+      nextBtn.on('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          filterAndDisplay();
+        }
+      });
+      controls.append(nextBtn);
+    }
+
+    function filterAndDisplay() {
+      const search = $('#searchInput').val().toLowerCase();
+      const filtered = allProducts.filter(p => p.name.toLowerCase().includes(search));
+      const totalPages = Math.ceil(filtered.length / productsPerPage);
+      if (currentPage > totalPages) currentPage = 1;
+      displayProducts(filtered);
+    }
+
+    $(document).ready(function () {
+      $.get("https://docs.google.com/spreadsheets/d/e/2PACX-1vToMLw2K0NsA-7oTXp-k5D0gW5VR3pG2nOGNCxqUwh3nmt48-kZQSDOGHFrKiu-pYFJG1HwH2Q7BcbR/pub?output=csv", function (data) {
+        const lines = data.trim().split("\n").slice(1); // Skip header
+        allProducts = lines.map(line => {
+          const cols = line.split(",");
+          const name = cols[1];
+          const qty = parseInt(cols[2]);
+          const photo = cols[3];
+          return {
+            name: name,
+            photo: photo,
+            stock: qty > 0 ? "✅ In Stock" : "❌ Out of Stock"
+          };
+        });
+
+        filterAndDisplay();
+      });
+
+      $('#searchInput').on('input', filterAndDisplay);
+    });
+  </script>
+
+</body>
+</html>
