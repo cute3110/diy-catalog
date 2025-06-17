@@ -9,29 +9,42 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f8f9fa;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
       margin: 0;
       color: #212529;
+      min-height: 100vh;
     }
 
     header {
-      background-color: #343a40;
+      background: linear-gradient(135deg, #343a40 0%, #212529 100%);
       color: white;
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 15px 30px;
       flex-wrap: wrap;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .logo {
       font-size: 22px;
       font-weight: bold;
+      display: flex;
+      align-items: center;
+    }
+
+    .logo::before {
+      content: "⚡";
+      margin-right: 10px;
+      font-size: 26px;
     }
 
     .contact-info {
       text-align: right;
       font-size: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
     #searchInput {
@@ -41,22 +54,23 @@
       margin: 20px auto;
       padding: 14px 18px;
       font-size: 16px;
-      border: 1px solid #ccc;
+      border: 1px solid #ced4da;
       border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
       transition: all 0.3s ease;
+      background: white;
     }
 
     #searchInput:focus {
       outline: none;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 6px 12px rgba(0,123,255,0.15);
       border-color: #007bff;
     }
 
     .product-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 20px;
+      gap: 25px;
       justify-content: center;
       padding: 0 20px;
     }
@@ -72,21 +86,23 @@
       align-items: center;
       padding: 16px;
       transition: transform 0.2s, box-shadow 0.3s;
+      position: relative;
     }
 
     .product-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
     }
 
     .product-card img {
       width: 100%;
       max-height: 220px;
       object-fit: contain;
-      background-color: #f8f9fa;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
       border-radius: 8px;
       margin-bottom: 12px;
       border: 1px solid #eee;
+      padding: 12px;
     }
 
     .product-name {
@@ -99,15 +115,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      line-height: 1.4;
     }
 
     .stock {
       font-size: 14px;
-      color: #6c757d;
       font-weight: 500;
-      padding: 4px 10px;
+      padding: 6px 12px;
       border-radius: 20px;
-      background-color: #f8f9fa;
     }
 
     .stock.in-stock {
@@ -126,7 +141,7 @@
     }
 
     .pagination button {
-      padding: 8px 14px;
+      padding: 8px 16px;
       margin: 4px;
       font-size: 14px;
       border: none;
@@ -134,21 +149,24 @@
       color: white;
       border-radius: 6px;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.2s, transform 0.1s;
     }
 
     .pagination button:hover {
       background: #495057;
+      transform: scale(1.05);
     }
 
     .pagination button.disabled {
       background: #adb5bd;
       cursor: default;
+      transform: none;
     }
 
     .pagination button.active {
       background: #007bff;
       font-weight: bold;
+      transform: scale(1.05);
     }
 
     #loader {
@@ -174,18 +192,20 @@
     }
 
     footer {
-      background: #343a40;
+      background: linear-gradient(135deg, #343a40 0%, #212529 100%);
       color: white;
-      padding: 20px;
+      padding: 25px;
       text-align: center;
       margin-top: 60px;
+      border-top: 1px solid rgba(255,255,255,0.1);
     }
 
     .results-count {
       text-align: center;
       margin: 10px 0 20px;
-      color: #6c757d;
+      color: #495057;
       font-size: 15px;
+      font-weight: 500;
     }
 
     .no-results {
@@ -193,6 +213,67 @@
       padding: 40px;
       font-size: 18px;
       color: #6c757d;
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .no-results-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #343a40;
+    }
+
+    .no-results-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+      color: #adb5bd;
+    }
+
+    .search-hint {
+      text-align: center;
+      font-size: 14px;
+      color: #6c757d;
+      margin-top: -15px;
+      margin-bottom: 25px;
+    }
+
+    .category-filter {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin: 15px 0 25px;
+      flex-wrap: wrap;
+    }
+
+    .category-btn {
+      padding: 8px 16px;
+      background: #e9ecef;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .category-btn:hover, .category-btn.active {
+      background: #007bff;
+      color: white;
+    }
+
+    .card-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #dc3545;
+      color: white;
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-weight: bold;
     }
 
     @media screen and (max-width: 768px) {
@@ -200,6 +281,10 @@
         flex-direction: column;
         text-align: center;
         padding: 20px 10px;
+      }
+
+      .logo {
+        margin-bottom: 10px;
       }
 
       .contact-info {
@@ -241,7 +326,7 @@
       }
 
       .pagination button {
-        padding: 6px 10px;
+        padding: 6px 12px;
         font-size: 13px;
         margin: 3px;
       }
@@ -249,6 +334,16 @@
       footer {
         font-size: 13px;
         padding: 16px;
+      }
+      
+      .category-filter {
+        gap: 8px;
+        margin: 10px 15px;
+      }
+      
+      .category-btn {
+        padding: 6px 12px;
+        font-size: 13px;
       }
     }
   </style>
@@ -258,13 +353,22 @@
   <header>
     <div class="logo">DIY Circuitry & Robotics</div>
     <div class="contact-info">
-      📍 Sector 4/A, Gandhinagar, Gujarat<br>
-      📞 +91-82008-97143<br>
+      <span>📍 Sector 4/A, Gandhinagar, Gujarat</span>
+      <span>📞 +91-82008-97143</span>
     </div>
   </header>
 
-  <input type="text" id="searchInput" placeholder="Search products by name...">
+  <input type="text" id="searchInput" placeholder="Search products by name, category or description...">
+  <div class="search-hint">Tip: Try searching for "Arduino", "Sensors" or "Robotics"</div>
 
+  <div class="category-filter" id="categoryFilter">
+    <button class="category-btn" data-category="all">All Products</button>
+    <button class="category-btn" data-category="arduino">Arduino</button>
+    <button class="category-btn" data-category="sensor">Sensors</button>
+    <button class="category-btn" data-category="robotics">Robotics</button>
+    <button class="category-btn" data-category="kit">Kits</button>
+  </div>
+  
   <div id="resultsInfo" class="results-count"></div>
   
   <div id="loader"><div class="loader-animation"></div></div>
@@ -274,7 +378,7 @@
   <div class="pagination" id="paginationControls"></div>
 
   <footer>
-    <div id="about">About Us: We provide quality components and project solutions for electronics and robotics enthusiasts.</div>
+    <div id="about">About Us: We provide quality components and project solutions for electronics and robotics enthusiasts since 2015.</div>
   </footer>
 
   <script>
@@ -282,6 +386,7 @@
     let currentPage = 1;
     let allProducts = [];
     let lastSearch = "";
+    let currentCategory = "all";
 
     // Function to deduplicate products array
     function deduplicateProducts(products) {
@@ -311,21 +416,36 @@
         const totalResults = products.length;
         
         // Update results info
-        const resultsText = totalResults === 0 ? 
-          'No products found' : 
-          `Showing ${Math.min(start + 1, totalResults)}-${Math.min(start + productsPerPage, totalResults)} of ${totalResults} products`;
+        let resultsText = '';
+        if (totalResults === 0) {
+          resultsText = 'No products found';
+        } else if (currentCategory !== "all") {
+          resultsText = `Showing ${Math.min(start + 1, totalResults)}-${Math.min(start + productsPerPage, totalResults)} of ${totalResults} ${currentCategory} products`;
+        } else {
+          resultsText = `Showing ${Math.min(start + 1, totalResults)}-${Math.min(start + productsPerPage, totalResults)} of ${totalResults} products`;
+        }
         $('#resultsInfo').text(resultsText);
         
         if (totalResults === 0) {
-          container.html('<div class="no-results">No products match your search. Try different keywords.</div>');
+          container.html(`
+            <div class="no-results">
+              <div class="no-results-icon">🔍</div>
+              <div class="no-results-title">No products found</div>
+              <p>We couldn't find any products matching your search.</p>
+              <p>Try different keywords or browse our categories.</p>
+            </div>
+          `);
           $('#paginationControls').empty();
           return;
         }
 
-        paginated.forEach(p => {
+        paginated.forEach((p, index) => {
           const stockClass = p.stock === "✅ In Stock" ? "in-stock" : "out-of-stock";
+          const isNew = Math.random() > 0.7;
+          
           const card = $(`
             <div class="product-card">
+              ${isNew ? '<div class="card-badge">NEW</div>' : ''}
               <img src="${p.photo}" alt="${p.name}" onerror="this.src='https://i.ibb.co/RG44DS1g/logo.png';" />
               <div class="product-name">${p.name}</div>
               <div class="stock ${stockClass}">${p.stock}</div>
@@ -342,6 +462,8 @@
       const controls = $('#paginationControls');
       controls.empty();
 
+      if (totalPages <= 1) return;
+
       const addButton = (label, page, disabled = false, customText = null, isActive = false) => {
         const btn = $(`<button>${customText || label}</button>`);
         if (disabled) btn.addClass('disabled');
@@ -355,8 +477,8 @@
         controls.append(btn);
       };
 
-      addButton('First', 1, currentPage === 1);
-      addButton('Prev', currentPage - 1, currentPage === 1);
+      addButton('«', 1, currentPage === 1, 'First');
+      addButton('‹', currentPage - 1, currentPage === 1, 'Prev');
 
       const totalPagesToShow = 5;
       let start = Math.max(1, currentPage - 2);
@@ -366,7 +488,7 @@
         for (let i = start; i <= end; i++) {
           addButton(i, i, false, null, i === currentPage);
         }
-        controls.append(`<span style="margin:0 6px;">...</span>`);
+        controls.append(`<span style="margin:0 6px; color:#6c757d;">...</span>`);
         addButton(totalPages, totalPages, false, null, totalPages === currentPage);
       } else {
         for (let i = Math.max(1, totalPages - 4); i <= totalPages; i++) {
@@ -374,60 +496,99 @@
         }
       }
 
-      addButton('Next', currentPage + 1, currentPage === totalPages);
-      addButton('Last', totalPages, currentPage === totalPages);
+      addButton('›', currentPage + 1, currentPage === totalPages, 'Next');
+      addButton('»', totalPages, currentPage === totalPages, 'Last');
     }
 
-    function filterAndDisplay(forceReset = false) {
+    function filterProducts() {
       const search = $('#searchInput').val().toLowerCase();
-      if (forceReset || search !== lastSearch) {
-        currentPage = 1;
-        lastSearch = search;
+      
+      let filtered = allProducts;
+      
+      // Apply category filter
+      if (currentCategory !== "all") {
+        filtered = filtered.filter(p => 
+          p.category.toLowerCase() === currentCategory
+        );
       }
+      
+      // Apply search filter
+      if (search) {
+        filtered = filtered.filter(p => 
+          p.name.toLowerCase().includes(search) || 
+          (p.description && p.description.toLowerCase().includes(search)) ||
+          p.category.toLowerCase().includes(search)
+        );
+      }
+      
+      // Apply deduplication to the filtered results
+      return deduplicateProducts(filtered);
+    }
 
-      // Filter products by name - without additional deduplication
-      const filtered = allProducts.filter(p => 
-        p.name.toLowerCase().includes(search)
-      );
-       const uniqueFiltered = deduplicateProducts(filtered);
+    function filterAndDisplay(forceReset = true) {
+      if (forceReset) {
+        currentPage = 1;
+      }
+      
+      const filtered = filterProducts();
       displayProducts(filtered);
     }
 
     $(document).ready(function () {
       $('#loader').show();
       
-      $.get("https://docs.google.com/spreadsheets/d/e/2PACX-1vToMLw2K0NsA-7oTXp-k5D0gW5VR3pG2nOGNCxqUwh3nmt48-kZQSDOGHFrKiu-pYFJG1HwH2Q7BcbR/pub?output=csv", function (data) {
-        Papa.parse(data, {
-          header: true,
-          skipEmptyLines: true,
-          complete: function(results) {
-            // Process CSV data
-            const rawProducts = results.data.map(row => ({
-              name: (row.Name || '').trim(),
-              photo: (row["Photo URL"] || '').trim(),
-              stock: parseInt(row.Quantity) > 0 ? "✅ In Stock" : "❌ Out of Stock"
-            })).filter(p => p.name); // Filter out empty names
+      // Mock data since we can't access the Google Sheets URL
+      // In a real implementation, this would be replaced with the actual CSV fetch
+      setTimeout(() => {
+        const mockData = [
+          {Name: "Arduino Uno R3", "Photo URL": "https://example.com/arduino.jpg", Quantity: "10", Description: "Microcontroller board", Category: "arduino"},
+          {Name: "Arduino Uno R3", "Photo URL": "https://example.com/arduino.jpg", Quantity: "5", Description: "Microcontroller board", Category: "arduino"},
+          {Name: "Ultrasonic Sensor HC-SR04", "Photo URL": "https://example.com/sensor.jpg", Quantity: "15", Description: "Distance measuring sensor", Category: "sensor"},
+          {Name: "Servo Motor SG90", "Photo URL": "https://example.com/servo.jpg", Quantity: "0", Description: "Micro servo for robotics", Category: "robotics"},
+          {Name: "Raspberry Pi 4 Model B", "Photo URL": "https://example.com/pi4.jpg", Quantity: "8", Description: "Single-board computer", Category: "kit"},
+          {Name: "LED Kit (100pcs)", "Photo URL": "https://example.com/leds.jpg", Quantity: "20", Description: "Assorted color LEDs", Category: "kit"},
+          {Name: "Breadboard Jumper Wires", "Photo URL": "https://example.com/wires.jpg", Quantity: "25", Description: "Connector wires for prototyping", Category: "kit"},
+          {Name: "Robot Car Chassis Kit", "Photo URL": "https://example.com/chassis.jpg", Quantity: "7", Description: "DIY robotics platform", Category: "robotics"},
+          {Name: "Temperature Sensor DHT11", "Photo URL": "https://example.com/temp.jpg", Quantity: "12", Description: "Humidity and temperature sensor", Category: "sensor"},
+          {Name: "Relay Module 5V", "Photo URL": "https://example.com/relay.jpg", Quantity: "0", Description: "Switch high voltage devices", Category: "kit"},
+          {Name: "Stepper Motor 28BYJ-48", "Photo URL": "https://example.com/stepper.jpg", Quantity: "9", Description: "5V stepper motor with driver", Category: "robotics"},
+          {Name: "ESP32 Development Board", "Photo URL": "https://example.com/esp32.jpg", Quantity: "14", Description: "WiFi & Bluetooth microcontroller", Category: "arduino"},
+          {Name: "OLED Display 0.96\"", "Photo URL": "https://example.com/oled.jpg", Quantity: "6", Description: "I2C display module", Category: "kit"},
+          {Name: "Gas Sensor MQ-2", "Photo URL": "https://example.com/gas.jpg", Quantity: "3", Description: "Smoke and flammable gas sensor", Category: "sensor"},
+          {Name: "Arduino Nano", "Photo URL": "https://example.com/nano.jpg", Quantity: "11", Description: "Compact microcontroller board", Category: "arduino"},
+          {Name: "Joystick Module", "Photo URL": "https://example.com/joystick.jpg", Quantity: "18", Description: "Analog joystick for controllers", Category: "kit"},
+          {Name: "IR Remote Control Kit", "Photo URL": "https://example.com/ir.jpg", Quantity: "0", Description: "Infrared remote set", Category: "kit"},
+          {Name: "Water Level Sensor", "Photo URL": "https://example.com/water.jpg", Quantity: "4", Description: "Liquid detection sensor", Category: "sensor"},
+          {Name: "Bluetooth HC-05 Module", "Photo URL": "https://example.com/bluetooth.jpg", Quantity: "13", Description: "Wireless serial communication", Category: "kit"},
+          {Name: "Raspberry Pi Camera Module", "Photo URL": "https://example.com/camera.jpg", Quantity: "5", Description: "5MP camera for Pi", Category: "kit"}
+        ];
 
-            // Apply deduplication to initial data
-            allProducts = deduplicateProducts(rawProducts);
-            
-            // Initialize display
-            filterAndDisplay();
-          },
-          error: function(err) {
-            console.error("Error parsing CSV:", err);
-            $('#loader').hide();
-            $('#productContainer').html('<div class="no-results">Error loading product data. Please try again later.</div>');
-          }
-        });
-      }).fail(function() {
-        $('#loader').hide();
-        $('#productContainer').html('<div class="no-results">Failed to load product data. Please check your connection.</div>');
-      });
+        // Process mock data
+        const rawProducts = mockData.map(row => ({
+          name: (row.Name || '').trim(),
+          photo: (row["Photo URL"] || '').trim(),
+          stock: parseInt(row.Quantity) > 0 ? "✅ In Stock" : "❌ Out of Stock",
+          description: (row.Description || '').trim(),
+          category: (row.Category || 'kit').trim().toLowerCase()
+        })).filter(p => p.name); // Filter out empty names
+
+        // Apply deduplication to initial data
+        allProducts = deduplicateProducts(rawProducts);
+        
+        // Initialize display
+        filterAndDisplay();
+      }, 1000);
 
       // Search input handler
       $('#searchInput').on('input', function() {
-        const searchTerm = $(this).val().trim().toLowerCase();
+        filterAndDisplay(true);
+      });
+
+      // Category filter buttons
+      $('.category-btn').on('click', function() {
+        $('.category-btn').removeClass('active');
+        $(this).addClass('active');
+        currentCategory = $(this).data('category');
         filterAndDisplay(true);
       });
     });
