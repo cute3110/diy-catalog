@@ -7,12 +7,13 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f2f4f8;
+      background: #f8f9fa;
       margin: 0;
+      color: #212529;
     }
 
     header {
-      background-color: #007bff;
+      background-color: #343a40;
       color: white;
       display: flex;
       justify-content: space-between;
@@ -22,7 +23,7 @@
     }
 
     .logo {
-      font-size: 20px;
+      font-size: 22px;
       font-weight: bold;
     }
 
@@ -34,13 +35,14 @@
 
     #searchInput {
       display: block;
-      width: 100%;
-      max-width: 500px;
+      width: 90%;
+      max-width: 600px;
       margin: 20px auto;
-      padding: 12px 16px;
+      padding: 14px 18px;
       font-size: 16px;
       border: 1px solid #ccc;
       border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
 
     .product-grid {
@@ -52,27 +54,28 @@
     }
 
     .product-card {
-      background: #fff;
+      background: #ffffff;
       width: 260px;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
       overflow: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 16px;
-      transition: transform 0.2s;
+      transition: transform 0.2s, box-shadow 0.3s;
     }
 
     .product-card:hover {
-      transform: scale(1.02);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
     }
 
     .product-card img {
       width: 100%;
       max-height: 220px;
       object-fit: contain;
-      background-color: #f9f9f9;
+      background-color: #f1f3f5;
       border-radius: 8px;
       margin-bottom: 12px;
     }
@@ -80,14 +83,14 @@
     .product-name {
       font-weight: 600;
       font-size: 17px;
-      color: #222;
+      color: #343a40;
       margin-bottom: 6px;
       text-align: center;
     }
 
     .stock {
       font-size: 14px;
-      color: #555;
+      color: #6c757d;
     }
 
     .pagination {
@@ -100,7 +103,7 @@
       margin: 4px;
       font-size: 14px;
       border: none;
-      background: #007bff;
+      background: #343a40;
       color: white;
       border-radius: 6px;
       cursor: pointer;
@@ -108,11 +111,11 @@
     }
 
     .pagination button:hover {
-      background: #0056b3;
+      background: #495057;
     }
 
     .pagination button.disabled {
-      background: #aaa;
+      background: #adb5bd;
       cursor: default;
     }
 
@@ -120,18 +123,30 @@
       display: none;
       text-align: center;
       font-size: 18px;
-      padding: 20px;
+      padding: 40px;
     }
 
-    .image-loader {
-      width: 100%;
-      height: 220px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #f0f0f0;
-      font-size: 14px;
-      color: #999;
+    .loader-animation {
+      width: 48px;
+      height: 48px;
+      border: 5px solid #dee2e6;
+      border-top: 5px solid #007bff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    footer {
+      background: #343a40;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      margin-top: 60px;
     }
   </style>
 </head>
@@ -144,9 +159,13 @@
 
   <input type="text" id="searchInput" placeholder="Search products...">
 
-  <div id="loader">Loading...</div>
+  <div id="loader"><div class="loader-animation"></div></div>
   <div class="product-grid" id="productContainer"></div>
   <div class="pagination" id="paginationControls"></div>
+
+  <footer>
+    <div id="about">About Us: We provide quality components and project solutions for electronics and robotics enthusiasts.</div>
+  </footer>
 
   <script>
     const productsPerPage = 10;
@@ -164,19 +183,17 @@
         const paginated = products.slice(start, start + productsPerPage);
 
         paginated.forEach(p => {
-          const card = $(`
-            <div class="product-card">
-              <div class="image-loader">Loading image...</div>
-              <img src="${p.photo}" alt="${p.name}" style="display:none;" onload="this.previousElementSibling.style.display='none'; this.style.display='block';" onerror="this.src='https://i.ibb.co/RG44DS1g/logo.png'; this.style.display='block'; this.previousElementSibling.style.display='none';" />
+          const card = $(
+            `<div class="product-card">
+              <img src="${p.photo}" alt="${p.name}" onerror="this.src='https://i.ibb.co/RG44DS1g/logo.png';" />
               <div class="product-name">${p.name}</div>
               <div class="stock">${p.stock}</div>
-            </div>
-          `);
+            </div>`);
           container.append(card);
         });
 
         renderPagination(products.length);
-      }, 2500);
+      }, 1200);
     }
 
     function renderPagination(totalItems) {
@@ -219,7 +236,13 @@
 
     function filterAndDisplay() {
       const search = $('#searchInput').val().toLowerCase();
-      const filtered = allProducts.filter(p => p.name.toLowerCase().includes(search));
+      const seen = new Set();
+      const filtered = allProducts.filter(p => {
+        const key = p.name.toLowerCase();
+        if (!key.includes(search) || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
       const totalPages = Math.ceil(filtered.length / productsPerPage);
       if (currentPage > totalPages) currentPage = 1;
       displayProducts(filtered);
