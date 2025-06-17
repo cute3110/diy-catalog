@@ -44,6 +44,13 @@
       border: 1px solid #ccc;
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+    }
+
+    #searchInput:focus {
+      outline: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      border-color: #007bff;
     }
 
     .product-grid {
@@ -76,9 +83,10 @@
       width: 100%;
       max-height: 220px;
       object-fit: contain;
-      background-color: #ffffff;
+      background-color: #f8f9fa;
       border-radius: 8px;
       margin-bottom: 12px;
+      border: 1px solid #eee;
     }
 
     .product-name {
@@ -87,11 +95,29 @@
       color: #343a40;
       margin-bottom: 6px;
       text-align: center;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .stock {
       font-size: 14px;
       color: #6c757d;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background-color: #f8f9fa;
+    }
+
+    .stock.in-stock {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .stock.out-of-stock {
+      background-color: #f8d7da;
+      color: #721c24;
     }
 
     .pagination {
@@ -118,6 +144,11 @@
     .pagination button.disabled {
       background: #adb5bd;
       cursor: default;
+    }
+
+    .pagination button.active {
+      background: #007bff;
+      font-weight: bold;
     }
 
     #loader {
@@ -150,61 +181,76 @@
       margin-top: 60px;
     }
 
-   @media screen and (max-width: 768px) {
-  header {
-    flex-direction: column;
-    text-align: center;
-    padding: 20px 10px;
-  }
+    .results-count {
+      text-align: center;
+      margin: 10px 0 20px;
+      color: #6c757d;
+      font-size: 15px;
+    }
 
-  .contact-info {
-    text-align: center;
-    margin-top: 10px;
-    font-size: 13px;
-  }
+    .no-results {
+      text-align: center;
+      padding: 40px;
+      font-size: 18px;
+      color: #6c757d;
+    }
 
-  #searchInput {
-    width: 92%;
-    font-size: 15px;
-    margin: 16px auto;
-  }
+    @media screen and (max-width: 768px) {
+      header {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px 10px;
+      }
 
-  .product-grid {
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    padding: 0 10px;
-  }
+      .contact-info {
+        text-align: center;
+        margin-top: 10px;
+        font-size: 13px;
+      }
 
-  .product-card {
-    width: 95%;
-    max-width: 360px;
-    padding: 12px;
-  }
+      #searchInput {
+        width: 92%;
+        font-size: 15px;
+        margin: 16px auto;
+      }
 
-  .product-card img {
-    max-height: 180px;
-  }
+      .product-grid {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        padding: 0 10px;
+      }
 
-  .product-name {
-    font-size: 16px;
-  }
+      .product-card {
+        width: 95%;
+        max-width: 360px;
+        padding: 12px;
+      }
 
-  .stock {
-    font-size: 13px;
-  }
+      .product-card img {
+        max-height: 180px;
+      }
 
-  .pagination button {
-    padding: 6px 10px;
-    font-size: 13px;
-    margin: 3px;
-  }
+      .product-name {
+        font-size: 16px;
+        height: auto;
+      }
 
-  footer {
-    font-size: 13px;
-    padding: 16px;
-  }
-}
+      .stock {
+        font-size: 13px;
+      }
+
+      .pagination button {
+        padding: 6px 10px;
+        font-size: 13px;
+        margin: 3px;
+      }
+
+      footer {
+        font-size: 13px;
+        padding: 16px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -217,10 +263,14 @@
     </div>
   </header>
 
-  <input type="text" id="searchInput" placeholder="Search products...">
+  <input type="text" id="searchInput" placeholder="Search products by name...">
 
+  <div id="resultsInfo" class="results-count"></div>
+  
   <div id="loader"><div class="loader-animation"></div></div>
+  
   <div class="product-grid" id="productContainer"></div>
+  
   <div class="pagination" id="paginationControls"></div>
 
   <footer>
@@ -232,16 +282,16 @@
     let currentPage = 1;
     let allProducts = [];
     let lastSearch = "";
+    let uniqueProducts = new Map();
 
-    // Function to deduplicate products array
     function deduplicateProducts(products) {
-      const seen = new Map();
+      const uniqueMap = new Map();
       const result = [];
       
       for (const product of products) {
-        const key = product.name + "|" + product.photo;
-        if (!seen.has(key)) {
-          seen.set(key, true);
+        const key = product.name.toLowerCase() + "|" + product.photo;
+        if (!uniqueMap.has(key)) {
+          uniqueMap.set(key, true);
           result.push(product);
         }
       }
@@ -258,13 +308,27 @@
         $('#loader').hide();
         const start = (currentPage - 1) * productsPerPage;
         const paginated = products.slice(start, start + productsPerPage);
+        
+        // Update results info
+        const totalResults = products.length;
+        const resultsText = totalResults === 0 ? 
+          'No products found' : 
+          `Showing ${Math.min(start + 1, totalResults)}-${Math.min(start + productsPerPage, totalResults)} of ${totalResults} products`;
+        $('#resultsInfo').text(resultsText);
+        
+        if (totalResults === 0) {
+          container.html('<div class="no-results">No products match your search. Try different keywords.</div>');
+          $('#paginationControls').empty();
+          return;
+        }
 
         paginated.forEach(p => {
+          const stockClass = p.stock === "✅ In Stock" ? "in-stock" : "out-of-stock";
           const card = $(`
             <div class="product-card">
               <img src="${p.photo}" alt="${p.name}" onerror="this.src='https://i.ibb.co/RG44DS1g/logo.png';" />
               <div class="product-name">${p.name}</div>
-              <div class="stock">${p.stock}</div>
+              <div class="stock ${stockClass}">${p.stock}</div>
             </div>`);
           container.append(card);
         });
@@ -278,9 +342,10 @@
       const controls = $('#paginationControls');
       controls.empty();
 
-      const addButton = (label, page, disabled = false, customText = null) => {
+      const addButton = (label, page, disabled = false, customText = null, isActive = false) => {
         const btn = $(`<button>${customText || label}</button>`);
         if (disabled) btn.addClass('disabled');
+        if (isActive) btn.addClass('active');
         btn.on('click', () => {
           if (!disabled) {
             currentPage = page;
@@ -299,13 +364,13 @@
 
       if (end < totalPages) {
         for (let i = start; i <= end; i++) {
-          addButton(i, i, i === currentPage);
+          addButton(i, i, false, null, i === currentPage);
         }
         controls.append(`<span style="margin:0 6px;">...</span>`);
-        addButton(totalPages, totalPages, currentPage === totalPages);
+        addButton(totalPages, totalPages, false, null, totalPages === currentPage);
       } else {
         for (let i = Math.max(1, totalPages - 4); i <= totalPages; i++) {
-          addButton(i, i, i === currentPage);
+          addButton(i, i, false, null, i === currentPage);
         }
       }
 
@@ -320,35 +385,51 @@
         lastSearch = search;
       }
 
-      // Apply deduplication to filtered results
-      const filtered = deduplicateProducts(
-        allProducts.filter(p => p.name.toLowerCase().includes(search))
+      // Filter products by name
+      const filtered = allProducts.filter(p => 
+        p.name.toLowerCase().includes(search)
       );
       
       displayProducts(filtered);
     }
 
     $(document).ready(function () {
+      $('#loader').show();
+      
       $.get("https://docs.google.com/spreadsheets/d/e/2PACX-1vToMLw2K0NsA-7oTXp-k5D0gW5VR3pG2nOGNCxqUwh3nmt48-kZQSDOGHFrKiu-pYFJG1HwH2Q7BcbR/pub?output=csv", function (data) {
         Papa.parse(data, {
           header: true,
           skipEmptyLines: true,
           complete: function(results) {
-            allProducts = results.data.map(row => ({
+            // Process CSV data
+            const rawProducts = results.data.map(row => ({
               name: (row.Name || '').trim(),
               photo: (row["Photo URL"] || '').trim(),
               stock: parseInt(row.Quantity) > 0 ? "✅ In Stock" : "❌ Out of Stock"
             })).filter(p => p.name); // Filter out empty names
 
-            // Apply deduplication to initial data
-            allProducts = deduplicateProducts(allProducts);
+            // Deduplicate products
+            allProducts = deduplicateProducts(rawProducts);
             
+            // Initialize display
             filterAndDisplay();
+          },
+          error: function(err) {
+            console.error("Error parsing CSV:", err);
+            $('#loader').hide();
+            $('#productContainer').html('<div class="no-results">Error loading product data. Please try again later.</div>');
           }
         });
+      }).fail(function() {
+        $('#loader').hide();
+        $('#productContainer').html('<div class="no-results">Failed to load product data. Please check your connection.</div>');
       });
 
-      $('#searchInput').on('input', () => filterAndDisplay(true));
+      // Search input handler
+      $('#searchInput').on('input', function() {
+        const searchTerm = $(this).val().trim().toLowerCase();
+        filterAndDisplay(true);
+      });
     });
   </script>
 </body>
