@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>DIY Circuitry & Robotics Catalog</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -19,7 +20,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 15px 30px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      flex-wrap: wrap;
     }
 
     .logo {
@@ -148,7 +149,25 @@
       margin-top: 60px;
     }
 
-    .hidden { display: none; }
+    @media (max-width: 600px) {
+      .product-grid {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .product-card {
+        width: 90%;
+      }
+
+      header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .contact-info {
+        margin-top: 10px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -199,7 +218,7 @@
         });
 
         renderPagination(products.length);
-      }, 1000);
+      }, 500);
     }
 
     function renderPagination(totalItems) {
@@ -207,42 +226,43 @@
       const controls = $('#paginationControls');
       controls.empty();
 
-      const maxVisible = 5;
-      let start = Math.max(currentPage - 2, 1);
-      let end = Math.min(start + maxVisible - 1, totalPages);
-      if (end - start < maxVisible - 1) start = Math.max(end - maxVisible + 1, 1);
-
-      const firstBtn = $('<button>First</button>');
-      if (currentPage === 1) firstBtn.addClass('disabled');
-      firstBtn.on('click', () => { currentPage = 1; filterAndDisplay(false); });
-      controls.append(firstBtn);
-
-      const prevBtn = $('<button>Prev</button>');
-      if (currentPage === 1) prevBtn.addClass('disabled');
-      prevBtn.on('click', () => { if (currentPage > 1) { currentPage--; filterAndDisplay(false); } });
-      controls.append(prevBtn);
-
-      for (let i = start; i <= end; i++) {
-        const btn = $(`<button>${i}</button>`);
-        if (i === currentPage) btn.addClass('disabled');
-        btn.on('click', () => { currentPage = i; filterAndDisplay(false); });
+      const addButton = (label, page, disabled = false, customText = null) => {
+        const btn = $(`<button>${customText || label}</button>`);
+        if (disabled) btn.addClass('disabled');
+        btn.on('click', () => {
+          if (!disabled) {
+            currentPage = page;
+            filterAndDisplay(false);
+          }
+        });
         controls.append(btn);
+      };
+
+      addButton('First', 1, currentPage === 1);
+      addButton('Prev', currentPage - 1, currentPage === 1);
+
+      const totalPagesToShow = 5;
+      let start = Math.max(1, currentPage - 2);
+      let end = Math.min(start + totalPagesToShow - 1, totalPages);
+
+      if (end < totalPages) {
+        for (let i = start; i <= end; i++) {
+          addButton(i, i, i === currentPage);
+        }
+        controls.append(`<span style="margin:0 6px;">...</span>`);
+        addButton(totalPages, totalPages, currentPage === totalPages);
+      } else {
+        for (let i = Math.max(1, totalPages - 4); i <= totalPages; i++) {
+          addButton(i, i, i === currentPage);
+        }
       }
 
-      const nextBtn = $('<button>Next</button>');
-      if (currentPage === totalPages) nextBtn.addClass('disabled');
-      nextBtn.on('click', () => { if (currentPage < totalPages) { currentPage++; filterAndDisplay(false); } });
-      controls.append(nextBtn);
-
-      const lastBtn = $('<button>Last</button>');
-      if (currentPage === totalPages) lastBtn.addClass('disabled');
-      lastBtn.on('click', () => { currentPage = totalPages; filterAndDisplay(false); });
-      controls.append(lastBtn);
+      addButton('Next', currentPage + 1, currentPage === totalPages);
+      addButton('Last', totalPages, currentPage === totalPages);
     }
 
     function filterAndDisplay(forceReset = false) {
       const search = $('#searchInput').val().toLowerCase();
-
       if (forceReset || search !== lastSearch) {
         currentPage = 1;
         lastSearch = search;
@@ -254,20 +274,18 @@
 
     $(document).ready(function () {
       $.get("https://docs.google.com/spreadsheets/d/e/2PACX-1vToMLw2K0NsA-7oTXp-k5D0gW5VR3pG2nOGNCxqUwh3nmt48-kZQSDOGHFrKiu-pYFJG1HwH2Q7BcbR/pub?output=csv", function (data) {
-        const lines = data.trim().split("\n").slice(1);
-        allProducts = lines.map(line => {
-          const cols = line.split(",");
-          const name = cols[1];
-          const qty = parseInt(cols[2]);
-          const photo = cols[3];
-          return {
-            name: name,
-            photo: photo,
-            stock: qty > 0 ? "✅ In Stock" : "❌ Out of Stock"
-          };
+        Papa.parse(data, {
+          header: true,
+          skipEmptyLines: true,
+          complete: function(results) {
+            allProducts = results.data.map(row => ({
+              name: row.Name,
+              photo: row.Photo,
+              stock: parseInt(row.Quantity) > 0 ? "✅ In Stock" : "❌ Out of Stock"
+            }));
+            filterAndDisplay();
+          }
         });
-
-        filterAndDisplay();
       });
 
       $('#searchInput').on('input', () => filterAndDisplay(true));
