@@ -148,13 +148,17 @@
       text-align: center;
       margin-top: 60px;
     }
+
+    .hidden { display: none; }
   </style>
 </head>
 <body>
 
   <header>
     <div class="logo">DIY Circuitry & Robotics</div>
-    <a href="#contact" class="contact-link">Contact Us</a>
+    <div>
+      <a href="#contact" class="contact-link">Contact Us</a>
+    </div>
   </header>
 
   <input type="text" id="searchInput" placeholder="Search products...">
@@ -177,6 +181,7 @@
     const productsPerPage = 10;
     let currentPage = 1;
     let allProducts = [];
+    let previousPage = 1;
 
     function displayProducts(products) {
       const container = $('#productContainer');
@@ -214,36 +219,42 @@
 
       const firstBtn = $('<button>First</button>');
       if (currentPage === 1) firstBtn.addClass('disabled');
-      firstBtn.on('click', () => { currentPage = 1; filterAndDisplay(); });
+      firstBtn.on('click', () => { previousPage = currentPage; currentPage = 1; filterAndDisplay(); });
       controls.append(firstBtn);
 
       const prevBtn = $('<button>Prev</button>');
       if (currentPage === 1) prevBtn.addClass('disabled');
-      prevBtn.on('click', () => { if (currentPage > 1) { currentPage--; filterAndDisplay(); } });
+      prevBtn.on('click', () => { if (currentPage > 1) { previousPage = currentPage; currentPage--; filterAndDisplay(); } });
       controls.append(prevBtn);
 
       for (let i = start; i <= end; i++) {
         const btn = $(`<button>${i}</button>`);
         if (i === currentPage) btn.addClass('disabled');
-        btn.on('click', () => { currentPage = i; filterAndDisplay(); });
+        btn.on('click', () => { previousPage = currentPage; currentPage = i; filterAndDisplay(); });
         controls.append(btn);
       }
 
       const nextBtn = $('<button>Next</button>');
       if (currentPage === totalPages) nextBtn.addClass('disabled');
-      nextBtn.on('click', () => { if (currentPage < totalPages) { currentPage++; filterAndDisplay(); } });
+      nextBtn.on('click', () => { if (currentPage < totalPages) { previousPage = currentPage; currentPage++; filterAndDisplay(); } });
       controls.append(nextBtn);
 
       const lastBtn = $('<button>Last</button>');
       if (currentPage === totalPages) lastBtn.addClass('disabled');
-      lastBtn.on('click', () => { currentPage = totalPages; filterAndDisplay(); });
+      lastBtn.on('click', () => { previousPage = currentPage; currentPage = totalPages; filterAndDisplay(); });
       controls.append(lastBtn);
     }
 
     function filterAndDisplay() {
       const search = $('#searchInput').val().toLowerCase();
       const filtered = allProducts.filter(p => p.name.toLowerCase().includes(search));
-      currentPage = 1;
+
+      if (search === '') {
+        currentPage = previousPage;
+      } else {
+        currentPage = 1;
+      }
+
       displayProducts(filtered);
     }
 
