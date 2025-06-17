@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -207,12 +208,12 @@
         const paginated = products.slice(start, start + productsPerPage);
 
         paginated.forEach(p => {
-          const card = $(`
+          const card = $(
             <div class="product-card">
               <img src="${p.photo}" alt="${p.name}" onerror="this.src='https://i.ibb.co/RG44DS1g/logo.png';" />
               <div class="product-name">${p.name}</div>
               <div class="stock">${p.stock}</div>
-            </div>`);
+            </div>);
           container.append(card);
         });
 
@@ -226,7 +227,7 @@
       controls.empty();
 
       const addButton = (label, page, disabled = false, customText = null) => {
-        const btn = $(`<button>${customText || label}</button>`);
+        const btn = $(<button>${customText || label}</button>);
         if (disabled) btn.addClass('disabled');
         btn.on('click', () => {
           if (!disabled) {
@@ -248,7 +249,7 @@
         for (let i = start; i <= end; i++) {
           addButton(i, i, i === currentPage);
         }
-        controls.append(`<span style="margin:0 6px;">...</span>`);
+        controls.append(<span style="margin:0 6px;">...</span>);
         addButton(totalPages, totalPages, currentPage === totalPages);
       } else {
         for (let i = Math.max(1, totalPages - 4); i <= totalPages; i++) {
@@ -273,18 +274,16 @@
 
     $(document).ready(function () {
       $.get("https://docs.google.com/spreadsheets/d/e/2PACX-1vToMLw2K0NsA-7oTXp-k5D0gW5VR3pG2nOGNCxqUwh3nmt48-kZQSDOGHFrKiu-pYFJG1HwH2Q7BcbR/pub?output=csv", function (data) {
-        const lines = data.trim().split("\n").slice(1);
-        allProducts = lines.map(line => {
-          const cols = line.split(",");
-          const name = cols[1];
-          const qty = parseInt(cols[2]);
-          const photo = cols[3];
-          return {
-            name: name,
-            photo: photo,
-            stock: qty > 0 ? "✅ In Stock" : "❌ Out of Stock"
-          };
-        });
+        Papa.parse(data, {
+          header: true,
+          skipEmptyLines: true,
+          complete: function(results) {
+            allProducts = results.data.map(row => ({
+  name: row.Name,
+  photo: row["Photo URL"],
+  stock: parseInt(row.Quantity) > 0 ? "✅ In Stock" : "❌ Out of Stock"
+}));
+
             filterAndDisplay();
           }
         });
