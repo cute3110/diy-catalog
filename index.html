@@ -282,16 +282,16 @@
     let currentPage = 1;
     let allProducts = [];
     let lastSearch = "";
-    let uniqueProducts = new Map();
 
+    // Function to deduplicate products array
     function deduplicateProducts(products) {
-      const uniqueMap = new Map();
+      const seen = new Map();
       const result = [];
       
       for (const product of products) {
         const key = product.name.toLowerCase() + "|" + product.photo;
-        if (!uniqueMap.has(key)) {
-          uniqueMap.set(key, true);
+        if (!seen.has(key)) {
+          seen.set(key, true);
           result.push(product);
         }
       }
@@ -308,9 +308,9 @@
         $('#loader').hide();
         const start = (currentPage - 1) * productsPerPage;
         const paginated = products.slice(start, start + productsPerPage);
+        const totalResults = products.length;
         
         // Update results info
-        const totalResults = products.length;
         const resultsText = totalResults === 0 ? 
           'No products found' : 
           `Showing ${Math.min(start + 1, totalResults)}-${Math.min(start + productsPerPage, totalResults)} of ${totalResults} products`;
@@ -333,7 +333,7 @@
           container.append(card);
         });
 
-        renderPagination(products.length);
+        renderPagination(totalResults);
       }, 500);
     }
 
@@ -385,7 +385,7 @@
         lastSearch = search;
       }
 
-      // Filter products by name
+      // Filter products by name - without additional deduplication
       const filtered = allProducts.filter(p => 
         p.name.toLowerCase().includes(search)
       );
@@ -408,7 +408,7 @@
               stock: parseInt(row.Quantity) > 0 ? "✅ In Stock" : "❌ Out of Stock"
             })).filter(p => p.name); // Filter out empty names
 
-            // Deduplicate products
+            // Apply deduplication to initial data
             allProducts = deduplicateProducts(rawProducts);
             
             // Initialize display
