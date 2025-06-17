@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -176,8 +175,9 @@
   <header>
     <div class="logo">DIY Circuitry & Robotics</div>
     <div class="contact-info">
-      📍 Sector 4/A, Gandhinagar, Gujarat<br>
-      📞 +91-8200897143<br>
+      📍 123 Maker Street, Ahmedabad<br>
+      📞 +91-98765-43210<br>
+      ✉️ support@diycircuitry.com
     </div>
   </header>
 
@@ -188,7 +188,7 @@
   <div class="pagination" id="paginationControls"></div>
 
   <footer>
-    <div id="about">About Us: DIY Circuitry – Your One-Stop Robotics & Electronics Store!</div>
+    <div id="about">About Us: We provide quality components and project solutions for electronics and robotics enthusiasts.</div>
   </footer>
 
   <script>
@@ -208,12 +208,12 @@
         const paginated = products.slice(start, start + productsPerPage);
 
         paginated.forEach(p => {
-          const card = $(
+          const card = $(`
             <div class="product-card">
               <img src="${p.photo}" alt="${p.name}" onerror="this.src='https://i.ibb.co/RG44DS1g/logo.png';" />
               <div class="product-name">${p.name}</div>
               <div class="stock">${p.stock}</div>
-            </div>);
+            </div>`);
           container.append(card);
         });
 
@@ -227,7 +227,7 @@
       controls.empty();
 
       const addButton = (label, page, disabled = false, customText = null) => {
-        const btn = $(<button>${customText || label}</button>);
+        const btn = $(`<button>${customText || label}</button>`);
         if (disabled) btn.addClass('disabled');
         btn.on('click', () => {
           if (!disabled) {
@@ -249,7 +249,7 @@
         for (let i = start; i <= end; i++) {
           addButton(i, i, i === currentPage);
         }
-        controls.append(<span style="margin:0 6px;">...</span>);
+        controls.append(`<span style="margin:0 6px;">...</span>`);
         addButton(totalPages, totalPages, currentPage === totalPages);
       } else {
         for (let i = Math.max(1, totalPages - 4); i <= totalPages; i++) {
@@ -279,11 +279,10 @@
           skipEmptyLines: true,
           complete: function(results) {
             allProducts = results.data.map(row => ({
-  name: row.Name,
-  photo: row["Photo URL"],
-  stock: parseInt(row.Quantity) > 0 ? "✅ In Stock" : "❌ Out of Stock"
-}));
-
+              name: row.Name,
+              photo: row.Photo,
+              stock: parseInt(row.Quantity) > 0 ? "✅ In Stock" : "❌ Out of Stock"
+            }));
             filterAndDisplay();
           }
         });
