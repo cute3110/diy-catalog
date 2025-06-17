@@ -273,15 +273,18 @@
 
     $(document).ready(function () {
       $.get("https://docs.google.com/spreadsheets/d/e/2PACX-1vToMLw2K0NsA-7oTXp-k5D0gW5VR3pG2nOGNCxqUwh3nmt48-kZQSDOGHFrKiu-pYFJG1HwH2Q7BcbR/pub?output=csv", function (data) {
-        Papa.parse(data, {
-          header: true,
-          skipEmptyLines: true,
-          complete: function(results) {
-            allProducts = results.data.map(row => ({
-              name: row.Name,
-              photo: row.Photo,
-              stock: parseInt(row.Quantity) > 0 ? "✅ In Stock" : "❌ Out of Stock"
-            }));
+        const lines = data.trim().split("\n").slice(1);
+        allProducts = lines.map(line => {
+          const cols = line.split(",");
+          const name = cols[1];
+          const qty = parseInt(cols[2]);
+          const photo = cols[3];
+          return {
+            name: name,
+            photo: photo,
+            stock: qty > 0 ? "✅ In Stock" : "❌ Out of Stock"
+          };
+        });
             filterAndDisplay();
           }
         });
