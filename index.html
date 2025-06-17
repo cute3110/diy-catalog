@@ -149,25 +149,62 @@
       margin-top: 60px;
     }
 
-    @media (max-width: 600px) {
-      .product-grid {
-        flex-direction: column;
-        align-items: center;
-      }
+   @media screen and (max-width: 768px) {
+  header {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px 10px;
+  }
 
-      .product-card {
-        width: 90%;
-      }
+  .contact-info {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 13px;
+  }
 
-      header {
-        flex-direction: column;
-        text-align: center;
-      }
+  #searchInput {
+    width: 92%;
+    font-size: 15px;
+    margin: 16px auto;
+  }
 
-      .contact-info {
-        margin-top: 10px;
-      }
-    }
+  .product-grid {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 0 10px;
+  }
+
+  .product-card {
+    width: 95%;
+    max-width: 360px;
+    padding: 12px;
+  }
+
+  .product-card img {
+    max-height: 180px;
+  }
+
+  .product-name {
+    font-size: 16px;
+  }
+
+  .stock {
+    font-size: 13px;
+  }
+
+  .pagination button {
+    padding: 6px 10px;
+    font-size: 13px;
+    margin: 3px;
+  }
+
+  footer {
+    font-size: 13px;
+    padding: 16px;
+  }
+}
+
   </style>
 </head>
 <body>
