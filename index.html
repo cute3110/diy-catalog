@@ -176,7 +176,7 @@
     const productsPerPage = 10;
     let currentPage = 1;
     let allProducts = [];
-    let previousPage = 1;
+    let lastSearch = "";
 
     function displayProducts(products) {
       const container = $('#productContainer');
@@ -189,8 +189,8 @@
         const paginated = products.slice(start, start + productsPerPage);
 
         paginated.forEach(p => {
-          const card = $(
-            `<div class="product-card">
+          const card = $(`
+            <div class="product-card">
               <img src="${p.photo}" alt="${p.name}" onerror="this.src='https://i.ibb.co/RG44DS1g/logo.png';" />
               <div class="product-name">${p.name}</div>
               <div class="stock">${p.stock}</div>
@@ -199,7 +199,7 @@
         });
 
         renderPagination(products.length);
-      }, 1200);
+      }, 1000);
     }
 
     function renderPagination(totalItems) {
@@ -214,43 +214,42 @@
 
       const firstBtn = $('<button>First</button>');
       if (currentPage === 1) firstBtn.addClass('disabled');
-      firstBtn.on('click', () => { previousPage = currentPage; currentPage = 1; filterAndDisplay(); });
+      firstBtn.on('click', () => { currentPage = 1; filterAndDisplay(false); });
       controls.append(firstBtn);
 
       const prevBtn = $('<button>Prev</button>');
       if (currentPage === 1) prevBtn.addClass('disabled');
-      prevBtn.on('click', () => { if (currentPage > 1) { previousPage = currentPage; currentPage--; filterAndDisplay(); } });
+      prevBtn.on('click', () => { if (currentPage > 1) { currentPage--; filterAndDisplay(false); } });
       controls.append(prevBtn);
 
       for (let i = start; i <= end; i++) {
         const btn = $(`<button>${i}</button>`);
         if (i === currentPage) btn.addClass('disabled');
-        btn.on('click', () => { previousPage = currentPage; currentPage = i; filterAndDisplay(); });
+        btn.on('click', () => { currentPage = i; filterAndDisplay(false); });
         controls.append(btn);
       }
 
       const nextBtn = $('<button>Next</button>');
       if (currentPage === totalPages) nextBtn.addClass('disabled');
-      nextBtn.on('click', () => { if (currentPage < totalPages) { previousPage = currentPage; currentPage++; filterAndDisplay(); } });
+      nextBtn.on('click', () => { if (currentPage < totalPages) { currentPage++; filterAndDisplay(false); } });
       controls.append(nextBtn);
 
       const lastBtn = $('<button>Last</button>');
       if (currentPage === totalPages) lastBtn.addClass('disabled');
-      lastBtn.on('click', () => { previousPage = currentPage; currentPage = totalPages; filterAndDisplay(); });
+      lastBtn.on('click', () => { currentPage = totalPages; filterAndDisplay(false); });
       controls.append(lastBtn);
     }
 
-    function filterAndDisplay() {
+    function filterAndDisplay(forceReset = false) {
       const search = $('#searchInput').val().toLowerCase();
-      const filtered = allProducts.filter(p => p.name.toLowerCase().includes(search));
 
-      if (search === '') {
-        currentPage = previousPage;
-        displayProducts(allProducts);
-      } else {
+      if (forceReset || search !== lastSearch) {
         currentPage = 1;
-        displayProducts(filtered);
+        lastSearch = search;
       }
+
+      const filtered = allProducts.filter(p => p.name.toLowerCase().includes(search));
+      displayProducts(filtered);
     }
 
     $(document).ready(function () {
@@ -271,7 +270,7 @@
         filterAndDisplay();
       });
 
-      $('#searchInput').on('input', filterAndDisplay);
+      $('#searchInput').on('input', () => filterAndDisplay(true));
     });
   </script>
 </body>
