@@ -165,6 +165,12 @@
 
   <footer>
     <div id="about">About Us: We provide quality components and project solutions for electronics and robotics enthusiasts.</div>
+    <div id="contact">
+      <h3>Contact Us</h3>
+      <p>📍 Address: 123 Maker Street, Ahmedabad, Gujarat, India</p>
+      <p>📞 Phone: +91-98765-43210</p>
+      <p>✉️ Email: support@diycircuitry.com</p>
+    </div>
   </footer>
 
   <script>
@@ -183,8 +189,8 @@
         const paginated = products.slice(start, start + productsPerPage);
 
         paginated.forEach(p => {
-          const card = $(
-            `<div class="product-card">
+          const card = $(`
+            <div class="product-card">
               <img src="${p.photo}" alt="${p.name}" onerror="this.src='https://i.ibb.co/RG44DS1g/logo.png';" />
               <div class="product-name">${p.name}</div>
               <div class="stock">${p.stock}</div>
@@ -236,15 +242,8 @@
 
     function filterAndDisplay() {
       const search = $('#searchInput').val().toLowerCase();
-      const seen = new Set();
-      const filtered = allProducts.filter(p => {
-        const key = p.name.toLowerCase();
-        if (!key.includes(search) || seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-      const totalPages = Math.ceil(filtered.length / productsPerPage);
-      if (currentPage > totalPages) currentPage = 1;
+      const filtered = allProducts.filter(p => p.name.toLowerCase().includes(search));
+      currentPage = 1;
       displayProducts(filtered);
     }
 
