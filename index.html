@@ -2,20 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>DIY Circuitry Catalog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIY Circuitry & Robotics Catalog</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
       background: #f2f4f8;
-      padding: 30px;
+      padding: 0;
       margin: 0;
+    }
+
+    header {
+      background-color: #004080;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    nav {
+      background: #eee;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #004080;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
     }
 
     h1 {
       text-align: center;
       color: #333;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
 
     #searchInput {
@@ -56,7 +84,7 @@
     .product-card img {
       width: 100%;
       max-height: 220px;
-      object-fit: contain; /* <-- DON'T CROP IMAGE */
+      object-fit: contain;
       background-color: #f9f9f9;
       border-radius: 8px;
       margin-bottom: 12px;
@@ -100,16 +128,48 @@
       background: #aaa;
       cursor: default;
     }
+
+    footer {
+      background: #004080;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      margin-top: 50px;
+    }
   </style>
 </head>
 <body>
+  <header>
+    <h1>DIY Circuitry & Robotics</h1>
+  </header>
 
-  <h1>DIY Circuitry Product Catalog</h1>
-  <input type="text" id="searchInput" placeholder="Search products...">
+  <nav>
+    <a href="#catalog">Catalog</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </nav>
 
-  <div class="product-grid" id="productContainer"></div>
+  <div class="container" id="catalog">
+    <input type="text" id="searchInput" placeholder="Search products...">
+    <div class="product-grid" id="productContainer"></div>
+    <div class="pagination" id="paginationControls"></div>
+  </div>
 
-  <div class="pagination" id="paginationControls"></div>
+  <div class="container" id="about">
+    <h2>About Us</h2>
+    <p>DIY Circuitry & Robotics provides quality electronics, modules, and tools for students, hobbyists, and makers. We are passionate about enabling innovation through affordable and accessible components.</p>
+  </div>
+
+  <div class="container" id="contact">
+    <h2>Contact Us</h2>
+    <p>Email: contact@diycircuitry.com</p>
+    <p>Phone: +91-9876543210</p>
+    <p>Address: A-101, Maker Street, Ahmedabad, Gujarat</p>
+  </div>
+
+  <footer>
+    &copy; 2025 DIY Circuitry & Robotics. All rights reserved.
+  </footer>
 
   <script>
     const productsPerPage = 10;
@@ -119,7 +179,6 @@
     function displayProducts(products) {
       const container = $('#productContainer');
       container.empty();
-
       const start = (currentPage - 1) * productsPerPage;
       const paginated = products.slice(start, start + productsPerPage);
 
@@ -142,35 +201,32 @@
       const controls = $('#paginationControls');
       controls.empty();
 
-      const prevBtn = $('<button>Previous</button>');
-      if (currentPage === 1) prevBtn.addClass('disabled');
-      prevBtn.on('click', () => {
-        if (currentPage > 1) {
-          currentPage--;
-          filterAndDisplay();
-        }
-      });
-      controls.append(prevBtn);
+      const maxPagesToShow = 5;
+      let startPage = Math.max(1, currentPage - 2);
+      let endPage = Math.min(startPage + maxPagesToShow - 1, totalPages);
 
-      for (let i = 1; i <= totalPages; i++) {
+      if (endPage - startPage < maxPagesToShow - 1) {
+        startPage = Math.max(1, endPage - maxPagesToShow + 1);
+      }
+
+      const firstBtn = $('<button>&laquo; First</button>').on('click', () => { currentPage = 1; filterAndDisplay(); });
+      const prevBtn = $('<button>&lsaquo; Prev</button>').on('click', () => { if (currentPage > 1) { currentPage--; filterAndDisplay(); } });
+      const nextBtn = $('<button>Next &rsaquo;</button>').on('click', () => { if (currentPage < totalPages) { currentPage++; filterAndDisplay(); } });
+      const lastBtn = $('<button>Last &raquo;</button>').on('click', () => { currentPage = totalPages; filterAndDisplay(); });
+
+      if (currentPage === 1) prevBtn.addClass('disabled');
+      if (currentPage === totalPages) nextBtn.addClass('disabled');
+
+      controls.append(firstBtn).append(prevBtn);
+
+      for (let i = startPage; i <= endPage; i++) {
         const btn = $(`<button>${i}</button>`);
         if (i === currentPage) btn.addClass('disabled');
-        btn.on('click', () => {
-          currentPage = i;
-          filterAndDisplay();
-        });
+        btn.on('click', () => { currentPage = i; filterAndDisplay(); });
         controls.append(btn);
       }
 
-      const nextBtn = $('<button>Next</button>');
-      if (currentPage === totalPages) nextBtn.addClass('disabled');
-      nextBtn.on('click', () => {
-        if (currentPage < totalPages) {
-          currentPage++;
-          filterAndDisplay();
-        }
-      });
-      controls.append(nextBtn);
+      controls.append(nextBtn).append(lastBtn);
     }
 
     function filterAndDisplay() {
@@ -183,7 +239,7 @@
 
     $(document).ready(function () {
       $.get("https://docs.google.com/spreadsheets/d/e/2PACX-1vToMLw2K0NsA-7oTXp-k5D0gW5VR3pG2nOGNCxqUwh3nmt48-kZQSDOGHFrKiu-pYFJG1HwH2Q7BcbR/pub?output=csv", function (data) {
-        const lines = data.trim().split("\n").slice(1); // Skip header
+        const lines = data.trim().split("\n").slice(1);
         allProducts = lines.map(line => {
           const cols = line.split(",");
           const name = cols[1];
@@ -202,6 +258,5 @@
       $('#searchInput').on('input', filterAndDisplay);
     });
   </script>
-
 </body>
 </html>
