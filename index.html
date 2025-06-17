@@ -389,7 +389,7 @@
       const filtered = allProducts.filter(p => 
         p.name.toLowerCase().includes(search)
       );
-      
+       const uniqueFiltered = deduplicateProducts(filtered);
       displayProducts(filtered);
     }
 
